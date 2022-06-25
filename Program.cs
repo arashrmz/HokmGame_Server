@@ -26,6 +26,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>();
 //user service used for register & login
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<FriendService>();
 
 var app = builder.Build();
 
