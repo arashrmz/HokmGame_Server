@@ -1,11 +1,31 @@
+using HokmGame_Server.Data;
+using HokmGame_Server.Hubs;
+using HokmGame_Server.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+// Add services to the container.
+builder.Services.AddCors(options => options.AddPolicy("Cors", builder =>
+{
+    builder
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials()
+        .WithOrigins(
+            "http://localhost:8080",
+            "http://127.0.0.1:8080",
+            "http://0.0.0.0:8080",
+            "https://gourav-d.github.io");
+}));
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<AppDbContext>();
+//user service used for register & login
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
@@ -17,9 +37,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("Cors");
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();
