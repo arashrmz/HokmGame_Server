@@ -7,21 +7,16 @@ namespace HokmGame_Server.Hubs;
 public class ChatHub : Hub
 {
     private IUserService _userService;
+    private FriendService friendService;
+    private GameManager gameManager;
+    private PlayerManager playerManager;
 
-    public ChatHub(IUserService userService)
+    public ChatHub(IUserService userService, FriendService friendService, GameManager gameManager, PlayerManager playerManager)
     {
         _userService = userService;
-    }
-
-    public override Task OnConnectedAsync()
-    {
-        System.Console.WriteLine("Connected");
-        return base.OnConnectedAsync();
-    }
-
-    public async Task SendMessage(string user, string message)
-    {
-        await Clients.All.SendAsync("ReceiveMessage", user, message);
+        this.friendService = friendService;
+        this.gameManager = gameManager;
+        this.playerManager = playerManager;
     }
 
     //register a new user
@@ -46,11 +41,98 @@ public class ChatHub : Hub
         //verify password hash
         if (result != null && BCrypt.Net.BCrypt.Verify(password, result.Password))
         {
+            this.Context.Items.Add("user", result);
             await Clients.Caller.SendAsync("Login", "Success");
         }
         else
         {
             await Clients.Caller.SendAsync("Login", "Failed");
         }
+    }
+
+    //joins a room waiting for other player
+    public Task JoinRoom()
+    {
+        return Task.Run(() =>
+        {
+            int playerNum;
+            //Dynamically allocate number of rooms
+            if (gameManager.CountInRoom == 2 || gameManager.CountInRoom == 0)
+            {
+                playerNum = 1;
+                gameManager.CountInRoom = 1;
+                gameManager.NumOfRooms++;
+                Groups.AddToGroupAsync(Context.ConnectionId, gameManager.NumOfRooms.ToString());
+                Clients.Caller.SendAsync("JoinRoom", gameManager.NumOfRooms.ToString());
+            }
+            else
+            {
+                playerNum = 2;
+                gameManager.CountInRoom++;
+                Groups.AddToGroupAsync(Context.ConnectionId, gameManager.NumOfRooms.ToString());
+                //tell the room game is ready
+                Clients.Group(gameManager.NumOfRooms.ToString()).SendAsync("GameReady", gameManager.NumOfRooms.ToString());
+            }
+            playerManager.PlayersRooms.Add(new Player
+            {
+                ID = Context.ConnectionId,
+                PlayerNumber = playerNum,
+                User = (User)Context.Items["user"]
+            }, gameManager.NumOfRooms);
+        });
+    }
+
+    //send initial game data (decks, players, etc.) to other player
+    public Task<bool> StartGame(string roomName)
+    {
+        return Task.Run(() =>
+        {
+            try
+            {
+                //start the game
+                Clients.OthersInGroup(roomName).SendAsync("StartGame");
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+    }
+
+    //send initial game data (decks, players, etc.) to other player
+    public Task<bool> GameData(string roomName, string data)
+    {
+        return Task.Run(() =>
+        {
+            try
+            {
+                //send game state so players build decks
+                Clients.OthersInGroup(roomName).SendAsync("ReceiveGameData", data);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+    }
+
+    //player plays a card
+    public Task<bool> PlayCard(string roomName, string card)
+    {
+        return Task.Run(() =>
+        {
+            try
+            {
+                //send card to other player
+                Clients.OthersInGroup(roomName).SendAsync("ReceiveCard", card);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        });
     }
 }
