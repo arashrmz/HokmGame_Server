@@ -17,12 +17,12 @@ public class FriendService
 
     public async Task AddFriend(User sender, User friend)
     {
-        var friendship = new Friendship
-        {
-            SenderId = sender.Id,
-            FriendId = friend.Id
-        };
-        await _context.Friendships.AddAsync(friendship);
-        await _context.SaveChangesAsync();
+        // var friendship = new Friendship
+        // {
+        //     SenderId = sender.Id,
+        //     FriendId = friend.Id
+        // };
+        // await _context.Friendships.AddAsync(friendship);
+        // await _context.SaveChangesAsync();
     }
 }
