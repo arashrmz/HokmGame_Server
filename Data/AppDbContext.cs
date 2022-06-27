@@ -18,22 +18,5 @@ public class AppDbContext : DbContext
         options.UseMySql(Configuration.GetConnectionString("WebApiDatabase"), serverVersion);
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Friendship>()
-       .HasKey(f => new { f.SenderId, f.FriendId });
-
-        modelBuilder.Entity<Friendship>()
-            .HasOne(f => f.Sender)
-            .WithMany(u => u.Friends)
-            .HasForeignKey(f => f.SenderId);
-
-        modelBuilder.Entity<Friendship>()
-            .HasOne(f => f.Friend)
-            .WithMany(u => u.Friends)
-            .HasForeignKey(f => f.FriendId);
-    }
-
     public DbSet<User> Users { get; set; }
-    public DbSet<Friendship> Friendships { get; set; }
 }
