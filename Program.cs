@@ -28,6 +28,10 @@ builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<FriendService>();
 
+//services for managing rooms & players
+builder.Services.AddSingleton<GameManager>();
+builder.Services.AddSingleton<PlayerManager>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
