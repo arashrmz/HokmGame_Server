@@ -2,6 +2,7 @@
 using HokmGame_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HokmGame_Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220727214918_FriendsMigration2")]
+    partial class FriendsMigration2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -20,23 +22,20 @@ namespace HokmGame_Server.Migrations
 
             modelBuilder.Entity("HokmGame_Server.Data.Friend", b =>
                 {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.Property<int>("FriendId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("UserId1")
                         .HasColumnType("int");
 
-                    b.HasKey("ID");
+                    b.HasKey("UserId", "FriendId");
 
-                    b.HasIndex("FriendId");
+                    b.HasIndex("UserId1");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Friendships");
+                    b.ToTable("Friend");
                 });
 
             modelBuilder.Entity("HokmGame_Server.Data.User", b =>
@@ -61,15 +60,15 @@ namespace HokmGame_Server.Migrations
             modelBuilder.Entity("HokmGame_Server.Data.Friend", b =>
                 {
                     b.HasOne("HokmGame_Server.Data.User", "FriendUser")
-                        .WithMany("FriendsTo")
-                        .HasForeignKey("FriendId")
+                        .WithMany("Friends")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("HokmGame_Server.Data.User", "User")
-                        .WithMany("FriendsOf")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithMany()
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("FriendUser");
@@ -79,9 +78,7 @@ namespace HokmGame_Server.Migrations
 
             modelBuilder.Entity("HokmGame_Server.Data.User", b =>
                 {
-                    b.Navigation("FriendsOf");
-
-                    b.Navigation("FriendsTo");
+                    b.Navigation("Friends");
                 });
 #pragma warning restore 612, 618
         }

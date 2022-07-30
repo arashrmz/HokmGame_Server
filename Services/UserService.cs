@@ -9,6 +9,8 @@ public interface IUserService
     User? GetByName(string name);
     Task<bool> Create(User model);
     Task Delete(int id);
+    Task AddFriend(string friendName, int userId);
+    List<string> GetFriends(int userId);
 }
 
 public class UserService : IUserService
@@ -65,5 +67,22 @@ public class UserService : IUserService
         var user = await _context.Users.FindAsync(id);
         if (user == null) throw new KeyNotFoundException("User not found");
         return Task.FromResult(user).Result;
+    }
+
+    public async Task AddFriend(string friendName, int userId)
+    {
+        var user = await GetById(userId);
+        var friend = GetByName(friendName);
+        if (friend == null) throw new KeyNotFoundException("Friend not found");
+        if (_context.Friendships.Any(x => x.FriendId == friend.Id && x.UserId == userId)) throw new Exception("Already friends");
+        _context.Friendships.Add(new Friend { UserId = userId, FriendId = friend.Id });
+        _context.Friendships.Add(new Friend { UserId = friend.Id, FriendId = userId });
+        await _context.SaveChangesAsync();
+    }
+
+    public List<string> GetFriends(int userId)
+    {
+        var friends = _context.Friendships.Where(x => x.UserId == userId).Select(x => x.FriendUser.Name).ToList();
+        return friends;
     }
 }

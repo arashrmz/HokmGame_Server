@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HokmGame_Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220625165253_Friendship")]
-    partial class Friendship
+    [Migration("20220727211424_FriendsMigration")]
+    partial class FriendsMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,19 +20,19 @@ namespace HokmGame_Server.Migrations
                 .HasAnnotation("ProductVersion", "6.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("HokmGame_Server.Data.Friendship", b =>
+            modelBuilder.Entity("HokmGame_Server.Data.Friend", b =>
                 {
-                    b.Property<int>("SenderId")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.Property<int>("FriendId")
                         .HasColumnType("int");
 
-                    b.HasKey("SenderId", "FriendId");
+                    b.HasKey("UserId", "FriendId");
 
                     b.HasIndex("FriendId");
 
-                    b.ToTable("Friendships");
+                    b.ToTable("Friend");
                 });
 
             modelBuilder.Entity("HokmGame_Server.Data.User", b =>
@@ -54,23 +54,23 @@ namespace HokmGame_Server.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("HokmGame_Server.Data.Friendship", b =>
+            modelBuilder.Entity("HokmGame_Server.Data.Friend", b =>
                 {
-                    b.HasOne("HokmGame_Server.Data.User", "Friend")
-                        .WithMany()
+                    b.HasOne("HokmGame_Server.Data.User", "FriendUser")
+                        .WithMany("Friends")
                         .HasForeignKey("FriendId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("HokmGame_Server.Data.User", "Sender")
-                        .WithMany("Friends")
-                        .HasForeignKey("SenderId")
+                    b.HasOne("HokmGame_Server.Data.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Friend");
+                    b.Navigation("FriendUser");
 
-                    b.Navigation("Sender");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HokmGame_Server.Data.User", b =>

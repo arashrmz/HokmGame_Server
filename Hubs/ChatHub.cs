@@ -135,4 +135,20 @@ public class ChatHub : Hub
             }
         });
     }
+
+    public async Task AddFriend(string name, int myId)
+    {
+        await _userService.AddFriend(name, myId);
+    }
+
+    public async Task<User> GetUser(int id)
+    {
+        return await _userService.GetById(id);
+    }
+
+    public async Task GetFriends(int myId)
+    {
+        var friends = _userService.GetFriends(myId);
+        await Clients.Caller.SendAsync("ReceiveFriends", friends);
+    }
 }
